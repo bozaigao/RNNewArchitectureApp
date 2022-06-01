@@ -5,10 +5,9 @@
  * @format
  * @flow strict-local
  */
-import React from 'react';
+import React, {useEffect} from 'react';
 import {
   SafeAreaView,
-  StatusBar,
   StyleSheet,
   Text,
   useColorScheme,
@@ -20,6 +19,7 @@ import type {Node} from 'react';
 import {getRandomAsync} from './js/JsbridgeModule';
 import NativeTurboModule from './js/NativeTurboModule';
 import RenderView from './js/NativeRenderView';
+import MessageQueue from 'react-native/Libraries/BatchedBridge/MessageQueue';
 
 const App: () => Node = () => {
   const NUM = 10000;
@@ -28,7 +28,6 @@ const App: () => Node = () => {
   const [bridgeTime, setBridgeTime] = useState(0);
   const [countTurbo, setCountTurbo] = useState(0);
   const [turboTime, setTurboTime] = useState(0);
-  const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
     backgroundColor: 'white',
@@ -54,10 +53,13 @@ const App: () => Node = () => {
     setTurboTime(new Date().getTime() - startTime);
   };
 
+  useEffect(() => {
+    MessageQueue.spy(true);
+  }, []);
+
   return (
     <SafeAreaView style={backgroundStyle}>
-      <StatusBar barStyle={isDarkMode ? 'lsight-content' : 'dark-content'} />
-      <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 20}}>
+      <View style={styles.task1}>
         <TouchableOpacity onPress={getCountByBridge}>
           <View style={styles.button}>
             <Text style={styles.text}>execute by jsBridge</Text>
@@ -69,7 +71,7 @@ const App: () => Node = () => {
           <Text>{`time：${bridgeTime}ms`}</Text>
         </View>
       </View>
-      <View style={{flexDirection: 'row', alignItems: 'center', marginTop: 20}}>
+      <View style={styles.task2}>
         <TouchableOpacity onPress={getCountByTurboModule}>
           <View
             style={Object.assign(
@@ -87,17 +89,10 @@ const App: () => Node = () => {
       </View>
       <RenderView
         num={NUM}
-        style={{
-          width: 350,
-          height: 100,
-          marginTop: 20,
-        }}
+        style={styles.nativeView}
       />
       <Text
-        style={{
-          fontWeight: 'bold',
-          fontSize: 30,
-        }}>{`If the JS bridge of efficiency is 1, the Turbo Module is ${
+        style={styles.nativeText}>{`If the JS bridge of efficiency is 1, the Turbo Module is ${
         bridgeTime / turboTime
       }`}</Text>
     </SafeAreaView>
@@ -112,7 +107,29 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
   },
-  text: {color: 'white', fontWeight: 'bold'},
+  task1: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  task2: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: 20,
+  },
+  text: {
+    color: 'white',
+    fontWeight: 'bold',
+  },
+  nativeView:{
+    width: 350,
+    height: 100,
+    marginTop: 20,
+  },
+  nativeText:{
+    fontWeight: 'bold',
+    fontSize: 30,
+  }¬
 });
 
 export default App;
